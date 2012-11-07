@@ -160,10 +160,11 @@ brand:  $(BRAND_PNGS) $(wildcard publican-clusterlabs/en-US/*.xml)
 pdf:
 	make DOCBOOK_FORMATS="pdf" ASCIIDOC_CLI_TYPE=$(ASCIIDOC_CLI_TYPE) all-local
 
-# Make sure www-(pcs|crmsh) happen in serial
+# Make sure www-(pcs|crmsh|lcmc) happen in serial
 www:    
 	make www-pcs
 	make www-crmsh
+	make www-lcmc
 	make $(generated_docs) $(ascii)
 	rsync -rtz --progress $(generated_docs) $(ascii) $(asciiman) root@www.clusterlabs.org:/var/www/html/doc/
 
@@ -172,6 +173,8 @@ www-crmsh:
 
 www-pcs:
 	make ASCIIDOC_CLI_TYPE=pcs clean-local www-cli
+www-lcmc:
+	make ASCIIDOC_CLI_TYPE=lcmc clean-local www-cli
 
 www-cli:
 	for book in $(docbook); do 										\
