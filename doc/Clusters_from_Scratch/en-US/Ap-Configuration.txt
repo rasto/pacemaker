@@ -233,6 +233,9 @@ rsc_defaults $id="rsc-options" \
 .....
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/final-cluster-configuration.png["Final Cluster Configuration",align="center"]
+endif::[]
 
 === Node List ===
 
@@ -250,6 +253,10 @@ ifdef::crmsh[]
 node pcmk-1
 node pcmk-2
 .....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/node-list.png["Node List",align="center"]
 endif::[]
 
 === Cluster Options ===
@@ -292,6 +299,10 @@ property $id="cib-bootstrap-options" \
 .....
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/cluster-options.png["Cluster Options",align="center"]
+endif::[]
+
 === Resources ===
 
 
@@ -314,6 +325,12 @@ ifdef::crmsh[]
 rsc_defaults $id="rsc-options" \
     resource-stickiness="100"
 .....
+endif::[]
+
+ifdef::lcmc[]
+* resource-stickiness - Specify the aversion to moving resources to other machines
+
+image::images/lcmc/resource-defaults.png["Resource Defaults",align="center"]
 endif::[]
 
 ==== Fencing ====
@@ -340,6 +357,11 @@ primitive ipmi-fencing stonith::fence_ipmilan \
 clone Fencing rsa-fencing
 .....
 endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/stonith-config.png["STONITH Config",align="center"]
+endif::[]
+
 
 ==== Service Address ====
 
@@ -375,6 +397,10 @@ primitive ClusterIP ocf:heartbeat:IPaddr2 \
 clone WebIP ClusterIP
     meta globally-unique="true" clone-max="2" clone-node-max="2"
 .....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/cluster-ip-final.png["Cluster IP Config",align="center"]
 endif::[]
 
 [NOTE]
@@ -419,6 +445,10 @@ ms WebDataClone WebData \
 .....
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/drbd-final.png["DRBD Config",align="center"]
+endif::[]
+
 
 ==== Cluster Filesystem ====
 
@@ -458,6 +488,10 @@ order start-WebFS-after-gfs-control inf: gfs-clone WebFSClone
 .....
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/fs-final.png["Filesystem Config",align="center"]
+endif::[]
+
 ==== Apache ====
 
 Lastly we have the actual service, Apache. We need only tell the cluster
@@ -494,5 +528,9 @@ colocation website-with-ip inf: WebSiteClone WebIP
 order apache-after-ip inf: WebIP WebSiteClone
 order WebSite-after-WebFS inf: WebFSClone WebSiteClone
 .....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/apache-final.png["Apache Config",align="center"]
 endif::[]
 

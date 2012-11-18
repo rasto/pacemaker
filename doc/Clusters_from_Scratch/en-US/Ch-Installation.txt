@@ -413,6 +413,9 @@ pcmk-2
 
 === Install the Cluster Software ===
 
+
+ifndef::lcmc[]
+
 Since version 12, Fedora comes with recent versions of everything you
 need, so simply fire up the shell and run:
 
@@ -839,6 +842,16 @@ Dependency Installed:
 Complete!
 [root@pcmk-1 ~]#
 .....
+endif::[]
+
+ifdef::lcmc[]
+Since version 12, Fedora comes with recent versions of everything you
+need, so simply fire up the GUI and run:
+
+image::images/lcmc/install1.png["Install the Cluster Software",align="center"]
+
+image::images/lcmc/install-done.png["Install the Cluster Software",align="center"]
+endif::[]
 
 Now install the cluster software on the second node.
 
@@ -855,6 +868,11 @@ across all nodes from a single location.
 
 Make sure to install the pcs packages on both nodes.
 endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/install-next-node.png["The Second Node",align="center"]
+endif::[]
+
 
 == Setup ==
 
@@ -902,6 +920,20 @@ the `--stdin` option for `passwd`:
 endif::[]
 
 ifdef::crmsh[]
+
+=== Preparation - Multicast ===
+
+Choose a port number and 
+http://en.wikipedia.org/wiki/Multicast[multi-cast] address.
+http://en.wikipedia.org/wiki/Multicast_address[]
+
+Be sure that the values you chose do not conflict with any existing
+clusters you might have.  For this document, I have chosen port '4000'
+and used '239.255.1.1' as the multi-cast address.
+
+endif::[]
+
+ifdef::lcmc[]
 
 === Preparation - Multicast ===
 
@@ -1064,6 +1096,17 @@ quorum {
 }
 END
 -----
+
+endif::[]
+
+ifdef::lcmc[]
+
+In the past, at this point in the tutorial an explanation of how to
+configure and propagate corosync's /etc/corosync.conf file would be
+necessary. Using LCMC greatly simplifies this process by generating
+'corosync.conf' across all the nodes in the cluster with a single click.
+
+image::images/lcmc/corosync-config.png["Creating Corosync Config",align="center"]
 
 endif::[]
 

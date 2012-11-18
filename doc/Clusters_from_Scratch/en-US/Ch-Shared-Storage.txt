@@ -14,6 +14,7 @@ Since its inclusion in the upstream 2.6.33 kernel, everything needed
 to use DRBD has shiped with Fedora since version 13. All you need to
 do is install it:
 
+ifndef::lcmc[]
 [source,C]
 # yum install -y drbd-pacemaker drbd-udev
 
@@ -70,6 +71,13 @@ Dependency Installed:
 
 Complete!
 .....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/drbd-install.png["DRBD Install",align="center"]
+
+image::images/lcmc/drbd-installed.png["DRBD Install done",align="center"]
+endif::[]
 
 == Configure DRBD ==
 
@@ -81,6 +89,7 @@ If you have more than 1Gb free, feel free to use it. For this guide
 however, 1Gb is plenty of space for a single html file and sufficient for
 later holding the GFS2 metadata.
 
+ifndef::lcmc[]
 [source,C]
 ----
 # vgdisplay | grep -e Name - e Free
@@ -115,11 +124,23 @@ LV    VG    Attr  LSize  Origin Snap% Move Log Copy% Convert
   lv_root   vg_pcmk1 -wi-ao--   8.56g
   lv_swap   vg_pcmk1 -wi-ao-- 960.00m
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/create-pv.png["Create PV",align="center"]
+
+image::images/lcmc/create-vg.png["Create VG",align="center"]
+
+image::images/lcmc/create-lv.png["Create LV",align="center"]
+endif::[]
+
 
 === Write the DRBD Config ===
 
+ifndef::lcmc[]
 There is no series of commands for building a DRBD configuration, so simply
 copy the configuration below to /etc/drbd.conf
+endif::[]
 
 Detailed information on the directives used in this configuration (and
 other alternatives) is available from
@@ -133,6 +154,7 @@ the ones used in this guide.
 
 =========
 
+ifndef::lcmc[]
 ....
 global {
  usage-count yes;
@@ -159,6 +181,13 @@ resource wwwdata {
  }
 }
 ....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/create-drbd.png["Create DRBD",align="center"]
+
+image::images/lcmc/drbd-config.png["DRBD Config",align="center"]
+endif::[]
 
 [NOTE]
 =======
@@ -169,9 +198,14 @@ TODO: Explain the reason for the allow-two-primaries option
 
 === Initialize and Load DRBD ===
 
+ifdef::lcmc[]
+image::images/lcmc/drbd-configured.png["DRBD Configured",align="center"]
+endif::[]
+
 With the configuration in place, we can now perform the DRBD
 initialization
 
+ifndef::lcmc[]
 [source,C]
 ----
 # drbdadm create-md wwwdata
@@ -244,6 +278,11 @@ srcversion: 0D2B62DEDB020A425130935
  1: cs:Connected ro:Primary/Secondary ds:UpToDate/UpToDate C r-----
     ns:1015740 nr:0 dw:0 dr:1016404 al:0 bm:62 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:0
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/create-drbd-md.png["Create DRBD Meta-Data",align="center"]
+endif::[]
 
 pcmk-1 is now in the Primary state which allows it to be written to.
 Which means it's a good point at which to create a filesystem and populate
@@ -252,6 +291,7 @@ it with some data to serve up via our WebSite resource.
 
 === Populate DRBD with Data ===
 
+ifndef::lcmc[]
 [source,C]
 ----
 # mkfs.ext4 /dev/drbd1
@@ -276,6 +316,11 @@ Writing inode tables: done
 Creating journal (4096 blocks): done
 Writing superblocks and filesystem accounting information: done
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/drbd-create-fs.png["Create Filesystem",align="center"]
+endif::[]
 
 Now mount the newly created filesystem so we can create our index file
 
@@ -451,6 +496,7 @@ Online: [ pcmk-1 pcmk-2 ]
 ----
 endif::[]
 
+ifndef::lcmc[]
 [NOTE]
 =======
 
@@ -462,6 +508,7 @@ Now that DRBD is functioning we can configure a Filesystem resource to
 use it. In addition to the filesystem's definition, we also need to
 tell the cluster where it can be located (only on the DRBD Primary)
 and when it is allowed to start (after the Primary was promoted).
+endif::[]
 
 ifdef::pcs[]
 We are going to take a shortcut when creating the resource this time though.
@@ -588,6 +635,19 @@ op_defaults $id="op-options" \
 ----
 endif::[]
 
+ifdef::lcmc[]
+
+Now we can create our DRBD clone and display the revised configuration.
+
+image::images/lcmc/pcmk-drbd-filesystem.png["Create DRBD Cluster Config",align="center"]
+
+We also need to tell the cluster that Apache needs to run on the same
+machine as the filesystem and that it must be active before Apache can
+start.
+
+image::images/lcmc/pcmk-drbd-constraint.png["DRBD Constraint",align="center"]
+endif::[]
+
 After reviewing the new configuration, we again upload it and watch the
 cluster put it into effect.
 
@@ -646,6 +706,10 @@ Online: [ pcmk-1 pcmk-2 ]
      Slaves: [ pcmk-2 ]
  WebFS	(ocf::heartbeat:Filesystem):	Started pcmk-1
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/pcmk-drbd-configured.png["DRBD Configured",align="center"]
 endif::[]
 
 === Testing Migration ===
@@ -716,6 +780,10 @@ WebFS   (ocf::heartbeat:Filesystem):    Started pcmk-2
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/pcmk-drbd-standby.png["Pacemaker Node Standby",align="center"]
+endif::[]
+
 Once we've done everything we needed to on pcmk-1 (in this case nothing,
 we just wanted to see the resources move), we can allow the node to be a
 full cluster member again.
@@ -771,6 +839,10 @@ Online: [ pcmk-1 pcmk-2 ]
      Slaves: [ pcmk-1 ]
  WebFS	(ocf::heartbeat:Filesystem):	Started pcmk-2
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/pcmk-drbd-unstandby.png["Pacemaker Node Unstandby",align="center"]
 endif::[]
 
 Notice that our resource stickiness settings prevent the services from

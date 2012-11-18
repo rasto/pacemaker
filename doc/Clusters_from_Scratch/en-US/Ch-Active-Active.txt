@@ -15,6 +15,7 @@ Fedora 17.
 
 === Installing the required Software ===
 
+ifndef::lcmc[]
 [source,C]
 # yum install -y gfs2-utils dlm kernel-modules-extra
 .....
@@ -66,6 +67,11 @@ Installed:
 
 Complete!
 .....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/install-gfs2.png["Install GFS2",align="center"]
+endif::[]
 
 == Create a GFS2 Filesystem ==
 
@@ -113,6 +119,10 @@ Online: [ pcmk-1 pcmk-2 ]
      Masters: [ pcmk-2 ]
      Slaves: [ pcmk-1 ]
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/pcmk-stop-filesystem.png["Stop Filesystem",align="center"]
 endif::[]
 
 [NOTE]
@@ -180,6 +190,33 @@ continuing.
 ===========
 endif::[]
 
+ifdef::lcmc[]
+Lastly, we use -t to specify the lock table name. The format for this
+field is +clustername:fsname+. For the +fsname+, we need to use the same
+value as specified in 'corosync.conf' for +cluster_name+.  Just pick
+something unique and descriptive and add somewhere inside the +totem+
+block.  For example:
+
+.....
+totem {
+        version: 2
+
+        # cypto_cipher and crypto_hash: Used for mutual node authentication.
+        # If you choose to enable this, then do remember to create a shared
+        # secret with "corosync-keygen".
+        crypto_cipher: none
+        crypto_hash: none
+        cluster_name: mycluster
+  ...
+.....
+
+[IMPORTANT]
+===========
+Do this on each node in the cluster and be sure to restart them before
+continuing.
+===========
+endif::[]
+
 [IMPORTANT]
 ===========
 We must run the next command on whichever node last had '/dev/drbd'
@@ -190,6 +227,7 @@ mounted.  Otherwise you will receive the message:
 -----
 ===========
 
+ifndef::lcmc[]
 [source,C]
 -----
 # ssh pcmk-2 -- mkfs.gfs2 -p lock_dlm -j 2 -t mycluster:web /dev/drbd1
@@ -206,6 +244,11 @@ Locking Protocol:          "lock_dlm"
 Lock Table:                "mycluster"
 UUID:                      ed293a02-9eee-3fa3-ed1c-435ef1fd0116
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/mkfs-gfs2.png["Make GFS",align="center"]
+endif::[]
 
 ifdef::pcs[]
 [source,C]
@@ -321,6 +364,10 @@ Online: [ pcmk-1 pcmk-2 ]
  Clone Set: dlm_clone [dlm]
      Started: [ pcmk-1 pcmk-2 ]
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/gfs2-dlm.png["DLM Config",align="center"]
 endif::[]
 
 Then (re)populate the new filesystem with data (web pages). For now we'll
@@ -451,6 +498,14 @@ ClusterIP    (ocf::heartbeat:IPaddr):    Started pcmk-2WebFS (ocf::heartbeat:Fil
 -----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/pcmk-to-gfs2.png["Change to GFS2",align="center"]
+
+Now you can start the filesystem.
+
+image::images/lcmc/filesystem-started.png["Start Filesystem",align="center"]
+endif::[]
+
 == Reconfigure Pacemaker for Active/Active ==
 
 Almost everything is in place. Recent versions of DRBD are capable of
@@ -521,6 +576,10 @@ ifdef::crmsh[]
 # configure clone WebIP ClusterIP \
     meta globally-unique="true" clone-max="2" clone-node-max="2"
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/ip-clone.png["IPAddr2 Clone",align="center"]
 endif::[]
 
 Now we must tell the ClusterIP how to decide which requests are
@@ -599,6 +658,10 @@ rsc_defaults $id="rsc-options" \
 Notice how any constraints that referenced ClusterIP have been updated
 to use WebIP instead. This is an additional benefit of using the crm
 shell.
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/ip-clone2.png["IPAddr2 Clone",align="center"]
 endif::[]
 
 Next we need to convert the filesystem and Apache resources into
@@ -689,8 +752,10 @@ rsc_defaults $id="rsc-options" \
 -----
 endif::[]
 
+ifndef::lcmc[]
 Review the configuration before uploading it to the cluster, quitting the
 shell and watching the cluster's response
+endif::[]
 
 ifdef::pcs[]
 [source,C]
@@ -745,6 +810,10 @@ Clone Set: WebFSClone Started: [ pcmk-1 pcmk-2 ]
 Clone Set: WebSiteClone Started: [ pcmk-1 pcmk-2 ]
 Clone Set: dlm_clone Started: [ pcmk-1 pcmk-2 ]
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/active-active-configured.png["Active-active Configured",align="center"]
 endif::[]
 
 === Testing Recovery ===

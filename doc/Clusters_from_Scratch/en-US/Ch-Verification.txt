@@ -37,6 +37,24 @@ or
 
 endif::[]
 
+ifdef::lcmc[]
+== Start the Cluster ==
+
+Now that corosync is configured, it is time to start the cluster.
+The menu items below will start corosync and pacemaker on both nodes
+in the cluster.
+
+image::images/lcmc/select-hosts.png["Select Hosts",align="center"]
+
+image::images/lcmc/start-corosync.png["Start Corosync",align="center"]
+
+image::images/lcmc/start-pacemaker.png["Start Pacemaker",align="center"]
+
+image::images/lcmc/pacemaker-started.png["Pacemaker Started",align="center"]
+
+endif::[]
+
+
 == Verify Corosync Installation ==
 
 ifdef::crmsh[]
@@ -74,6 +92,11 @@ RING ID 0
 	status	= ring 0 active with no faults
 ----
 endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/verify.png["Verify Corosync",align="center"]
+endif::[]
+
 
 We can see here that everything appears normal with our fixed IP
 address, not a 127.0.0.x loopback address, listed as the +id+ and +no
@@ -290,4 +313,14 @@ Version: 1.1.7-2.fc17-ee0730e13d124c3d58f00016c3376a1de5323cff
 Online: [ pcmk-1 pcmk-2 ]
 ----
 
+endif::[]
+
+ifdef::lcmc[]
+Check the logs and crm_mon.
+
+image::images/lcmc/verify-status.png["Verify Pacemaker",align="center"]
+
+Next, check for any ERRORs during startup - there shouldn't be any.
+
+image::images/lcmc/log-viewer.png["Log Viewer",align="center"]
 endif::[]

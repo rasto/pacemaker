@@ -23,12 +23,27 @@ There are currently two command-line shells that people use, `pcs` and
 +{cli_name}+.  Start by taking some time to familiarize yourself with
 what it can do.
 
+ifndef::lcmc[]
 [NOTE]
 ===========
 The two shells share many concepts but the scope, layout and syntax
 does differ, so make sure you read the version of this guide that
 corresponds to the software installed on your system.
 ===========
+endif::[]
+
+ifdef::lcmc[]
+
+[NOTE]
+===========
+Although `lcmc` has the ability to manage all aspects of the cluster (both
+corosync and pacemaker), it does not require any specific cluster stack to
+be in use.
+===========
+
+[source,C]
+# lcmc
+endif::[]
 
 ifdef::pcs[]
 

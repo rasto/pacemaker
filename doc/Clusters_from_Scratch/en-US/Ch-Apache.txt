@@ -12,6 +12,7 @@ Before continuing, we need to make sure Apache is installed on both
 hosts. We also need the wget tool in order for the cluster to be able to check
 the status of the Apache server.
 
+ifndef::lcmc[]
 [source,C]
 # yum install -y httpd wget
 
@@ -89,6 +90,11 @@ Dependency Installed:
 
 Complete!
 .....
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/install-apache.png["Install Apache",align="center"]
+endif::[]
 
 == Preparation ==
 
@@ -124,6 +130,7 @@ it fails, the resource agent used by Pacemaker assumes the server-status
 URL is available. Look for the following in '/etc/httpd/conf/httpd.conf'
 and make sure it is not disabled or commented out:
 
+ifndef::lcmc[]
 [source,Apache Configuration]
 -----
 <Location /server-status>
@@ -133,6 +140,11 @@ and make sure it is not disabled or commented out:
    Allow from 127.0.0.1
 </Location>
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/httpd-conf.png["httpd.conf",align="center"]
+endif::[]
 
 == Update the Configuration ==
 
@@ -205,6 +217,10 @@ op_defaults $id="op-options" \
 -----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/apache-config.png["Apache Config",align="center"]
+endif::[]
+
 After a short delay, we should see the cluster start apache
 
 ifdef::pcs[]
@@ -248,6 +264,10 @@ Online: [ pcmk-1 pcmk-2 ]
 ClusterIP	(ocf:heartbeat:IPaddr2):	Started pcmk-2
 WebSite (ocf:heartbeat:apache):        Started pcmk-1
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/apache-started.png["Apache Start",align="center"]
 endif::[]
 
 Wait a moment, the WebSite resource isn't running on the same host as our
@@ -295,6 +315,27 @@ the +<Location /server-status>+ block.
 ======
 endif::[]
 
+ifdef::lcmc[]
+[NOTE]
+======
+If you see the WebSite resource has
+failed to start, then you've likely not enabled the status URL correctly.
+
+image::images/lcmc/apache-failed.png["Apache Failed",align="center"]
+
+You can check if this is the problem by running:
+
+....
+wget http://127.0.0.1/server-status
+....
+
+If you see +Connection refused+ in the output, then this is indeed the
+problem.  Check to ensure that +Allow from 127.0.0.1+ is present for
+the +<Location /server-status>+ block.
+
+======
+endif::[]
+
 == Ensuring Resources Run on the Same Host ==
 
 To reduce the load on any one machine, Pacemaker will generally try to
@@ -317,6 +358,14 @@ website-with-ip), indicate that its mandatory (so that if ClusterIP is
 not active anywhere, WebSite will not be permitted to run anywhere
 either) by specifying a score of INFINITY and finally list the two
 resources.
+endif::[]
+
+ifdef::lcmc[]
+To achieve this we use a colocation constraint that indicates it is
+mandatory for WebSite to run on the same node as ClusterIP.  The
+"mandatory" part of the colocation constraint is indicated by using a
+score of INFINITY.  The INFINITY score also means that if ClusterIP is not
+active anywhere, WebSite will not be permitted to run.
 endif::[]
 
 [NOTE]
@@ -406,6 +455,12 @@ Online: [ pcmk-1 pcmk-2 ]
 -----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/colocation.png["Colocation",align="center"]
+
+image::images/lcmc/colocated.png["Colocated Resources",align="center"]
+endif::[]
+
 == Controlling Resource Start/Stop Ordering ==
 
 When Apache starts, it binds to the available IP addresses. It doesn't
@@ -464,6 +519,10 @@ rsc_defaults $id="rsc-options" \
 op_defaults $id="op-options" \
 	timeout="240s"
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/add-order.png["Add Order",align="center"]
 endif::[]
 
 == Specifying a Preferred Location ==
@@ -563,12 +622,23 @@ Online: [ pcmk-1 pcmk-2 ]
 -----
 endif::[]
 
+ifdef::lcmc[]
+In the location constraint below, we are saying the WebSite resource
+prefers the node pcmk-1 with a score of 50.  The score here indicates
+how badly we'd like the resource to run somewhere.
+
+image::images/lcmc/location.png["Location",align="center"]
+
+image::images/lcmc/after-location.png["Located",align="center"]
+endif::[]
+
 Wait a minute, the resources are still on pcmk-2!
 
 Even though we now prefer pcmk-1 over pcmk-2, that preference is
 (intentionally) less than the resource stickiness (how much we
 preferred not to have unnecessary downtime).
 
+ifndef::lcmc[]
 To see the current placement scores, you can use a tool called crm_simulate
 
 [source,C]
@@ -588,6 +658,16 @@ native_color: WebSite allocation score on pcmk-2: 100
 
 Transition Summary:
 ----
+endif::[]
+
+ifdef::lcmc[]
+To see the current placement scores, you can use resource tool-tips
+
+image::images/lcmc/score-ipaddr.png["IPaddr Score",align="center"]
+
+image::images/lcmc/score-apache.png["Apache Score",align="center"]
+
+endif::[]
 
 == Manually Moving Resources Around the Cluster ==
 
@@ -689,6 +769,15 @@ The automated constraint used to move the resources to +pcmk-1+ is the
 line beginning with +location cli-prefer-WebSite+.
 endif::[]
 
+ifdef::lcmc[]
+There are always times when an administrator needs to override the
+cluster and force resources to move to a specific location. Underneath we
+use location constraints like the one we created above, happily you don't
+need to care.
+
+image::images/lcmc/migrate.png["Migrate",align="center"]
+endif::[]
+
 === Giving Control Back to the Cluster ===
 
 Once we've finished whatever activity that required us to move the
@@ -746,6 +835,10 @@ op_defaults $id="op-options" \
 -----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/unmigrate.png["Unmigrate",align="center"]
+endif::[]
+
 Note that the constraint is now gone. If we check the cluster
 status, we can also see that as expected the resources are still active
 on pcmk-1.
@@ -791,4 +884,8 @@ Online: [ pcmk-1 pcmk-2 ]
  ClusterIP	(ocf:heartbeat:IPaddr2):	Started pcmk-1
  WebSite	(ocf:heartbeat:apache):	Started pcmk-1
 -----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/location-done.png["After Unmigrate",align="center"]
 endif::[]

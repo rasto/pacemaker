@@ -38,6 +38,10 @@ property $id="cib-bootstrap-options" \
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/verify-status.png["Verify Pacemaker",align="center"]
+endif::[]
+
 ifdef::pcs[]
 
 For those that are not of afraid of XML, you can see the raw cluster
@@ -128,6 +132,7 @@ endif::[]
 Before we make any changes, its a good idea to check the validity of
 the configuration.
 
+ifndef::lcmc[]
 [source,C]
 ----
 # crm_verify -L -V
@@ -137,6 +142,12 @@ the configuration.
 Errors found during check: config not valid
   -V may provide more details
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/crm-verify.png["CRM Verify",align="center"]
+endif::[]
+
 
 As you can see, the tool has found some errors.
 
@@ -173,7 +184,15 @@ ifdef::crmsh[]
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/disable-stonith.png["Disable Stonith",align="center"]
+endif::[]
+
 With the new cluster option set, the configuration is now valid.
+
+ifdef::lcmc[]
+image::images/lcmc/crm-verify-ok.png["CRM Verify",align="center"]
+endif::[]
 
 [WARNING]
 =========
@@ -217,6 +236,10 @@ ifdef::crmsh[]
      params ip=192.168.122.120 cidr_netmask=32 \
      op monitor interval=30s
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/adding-resource.png["Adding Resource",align="center"]
 endif::[]
 
 The other important piece of information here is ocf:heartbeat:IPaddr2.
@@ -323,6 +346,15 @@ syslog-ng            tomcat               vmware
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/resource-standards.png["Resource Standards",align="center"]
+
+Finally, if you want to see all the resource agents available for
+a specific ocf provider (the IPaddr2 part of ocf:heartbeat:IPaddr2), run
+
+image::images/lcmc/resource-agents.png["Resource Agents",align="center"]
+endif::[]
+
 Now verify that the IP resource has been added and display the cluster's
 status to see that it is now active.
 
@@ -377,6 +409,10 @@ Online: [ pcmk-1 pcmk-2 ]
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/cluster-ip.png["Cluster IP",align="center"]
+endif::[]
+
 == Perform a Failover ==
 
 Being a high-availability cluster, we should test failover of our new
@@ -411,6 +447,10 @@ ifdef::crmsh[]
 # crm resource status ClusterIP
 resource ClusterIP is running on: pcmk-1
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/cluster-ip.png["Cluster IP",align="center"]
 endif::[]
 
 Shut down Pacemaker and Corosync on that machine.
@@ -474,6 +514,10 @@ OFFLINE: [ pcmk-1 ]
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/fail-over.png["Fail Over",align="center"]
+endif::[]
+
 There are three things to notice about the cluster's current
 state. The first is that, as expected, +pcmk-1+ is now offline. However
 we can also see that +ClusterIP+ isn't running anywhere!
@@ -532,6 +576,10 @@ property $id="cib-bootstrap-options" \
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/no-quorum-policy.png["No Quorum Policy",align="center"]
+endif::[]
+
 After a few moments, the cluster will start the IP address on the
 remaining node. Note that the cluster still does not have quorum.
 
@@ -577,10 +625,18 @@ OFFLINE: [ pcmk-1 ]
 ----
 endif::[]
 
+ifdef::lcmc[]
+image::images/lcmc/fail-over-ok.png["Fail Over",align="center"]
+endif::[]
+
 Now simulate node recovery by restarting the cluster stack on +pcmk-1+ and
-check the cluster's status.  Note, if you get an authentication error with
+check the cluster's status.
+
+ifndef::lcmc[]
+Note, if you get an authentication error with
 the 'pcs cluster start pcmk-1' command, you must authenticate on the node
 using the 'pcs cluster auth pcmk pcmk-1 pcmk-2' command discussed earlier.
+endif::[]
 
 ifdef::pcs[]
 [source,C]
@@ -625,6 +681,10 @@ Online: [ pcmk-1 pcmk-2 ]
 
 ClusterIP    (ocf::heartbeat:IPaddr):    Started pcmk-2
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/cluster-ip.png["Cluster IP",align="center"]
 endif::[]
 
 [NOTE]
@@ -680,4 +740,8 @@ property $id="cib-bootstrap-options" \
 rsc_defaults $id="rsc-options" \
 	resource-stickiness="100"
 ----
+endif::[]
+
+ifdef::lcmc[]
+image::images/lcmc/resource-stickiness.png["Resource Stickiness",align="center"]
 endif::[]
